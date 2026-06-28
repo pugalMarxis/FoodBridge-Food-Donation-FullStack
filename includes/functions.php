@@ -10,7 +10,7 @@ function e($value): string
     return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
 }
 
-/** Build a URL relative to the project base. */
+/** Creates website URLs automatically.*/
 function url(string $path = ''): string
 {
     return BASE_URL . '/' . ltrim($path, '/');
@@ -29,7 +29,7 @@ function set_flash(string $type, string $message): void
     $_SESSION['flash'] = ['type' => $type, 'message' => $message];
 }
 
-/** Read and clear the flash message. Returns null if none. */
+/** Read and clear the flash message. Returns null or array if none. */
 function get_flash(): ?array
 {
     if (!empty($_SESSION['flash'])) {
@@ -57,7 +57,7 @@ function render_flash(): string
         . e($flash['message']) . '</div>';
 }
 
-/** Trim + strip tags from a posted field. */
+/** Trim + strip tags from a posted field./Removes spaces at the beginning and end '?string '-string or null*/
 function clean(?string $value): string
 {
     return trim(strip_tags((string) $value));
