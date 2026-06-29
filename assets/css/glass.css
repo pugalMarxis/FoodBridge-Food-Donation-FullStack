@@ -1,0 +1,39 @@
+/* ==========================================================================
+   FoodBridge — glass.css
+   Glassmorphism utilities. Use for: navbar, login/register cards, hero search,
+   popups, sidebar header. NEVER on large tables.
+   ========================================================================== */
+
+.fb-glass {
+  background: var(--fb-glass-bg);
+  -webkit-backdrop-filter: blur(var(--fb-glass-blur));
+  backdrop-filter: blur(var(--fb-glass-blur));
+  border: 1px solid var(--fb-glass-border);
+  box-shadow: var(--fb-shadow-md);
+}
+
+.fb-glass-card {
+  background: var(--fb-glass-bg);
+  -webkit-backdrop-filter: blur(var(--fb-glass-blur));
+  backdrop-filter: blur(var(--fb-glass-blur));
+  border: 1px solid var(--fb-glass-border);
+  border-radius: var(--fb-radius-xl);
+  box-shadow: var(--fb-shadow-lg);
+  padding: var(--fb-space-8);
+}
+
+/* Frosted pill used for hero badge */
+.fb-glass-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--fb-space-2);
+  background: var(--fb-glass-bg);
+  -webkit-backdrop-filter: blur(var(--fb-glass-blur));
+  backdrop-filter: blur(var(--fb-glass-blur));
+  border: 1px solid var(--fb-primary-light);
+  color: var(--fb-primary-hover);
+  font-weight: 600;
+  font-size: 14px;
+  padding: var(--fb-space-2) var(--fb-space-4);
+  border-radius: var(--fb-radius-pill);
+}

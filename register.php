@@ -17,6 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $password = $_POST['password'] ?? '';
     $confirm  = $_POST['confirm'] ?? '';
 
+    // campact store values in assosective array
     $old = compact('name', 'email', 'phone', 'location', 'role');
 
     // Validation

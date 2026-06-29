@@ -1,0 +1,45 @@
+/* ==========================================================================
+   FoodBridge — animations.css
+   Subtle, premium motion only. Duration 0.3s. No flashy effects.
+   ========================================================================== */
+
+@keyframes fbFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes fbSlideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fbSlideRight {
+  from { opacity: 0; transform: translateX(-20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes fbFloat {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-10px); }
+}
+@keyframes fbScaleIn {
+  from { opacity: 0; transform: scale(.96); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.fb-anim-fade   { animation: fbFadeIn .3s ease both; }
+.fb-anim-slide  { animation: fbSlideUp .5s ease both; }
+.fb-anim-right  { animation: fbSlideRight .5s ease both; }
+.fb-anim-scale  { animation: fbScaleIn .4s ease both; }
+.fb-float       { animation: fbFloat 4s ease-in-out infinite; }
+
+/* Stagger helpers */
+.fb-delay-1 { animation-delay: .1s; }
+.fb-delay-2 { animation-delay: .2s; }
+.fb-delay-3 { animation-delay: .3s; }
+.fb-delay-4 { animation-delay: .4s; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}

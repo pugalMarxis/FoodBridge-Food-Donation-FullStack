@@ -1,0 +1,152 @@
+/* ==========================================================================
+   FoodBridge — layout.css
+   Navbar, sidebar, footer, page containers, grid helpers.
+   ========================================================================== */
+
+.fb-container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--fb-space-6);
+}
+
+/* ---------------- Navbar (Glassmorphism, sticky, 72px) ---------------- */
+.fb-navbar {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  height: 72px;
+  display: flex;
+  align-items: center;
+  background: var(--fb-glass-bg);
+  -webkit-backdrop-filter: blur(var(--fb-glass-blur));
+  backdrop-filter: blur(var(--fb-glass-blur));
+  border-bottom: 1px solid var(--fb-glass-border);
+}
+.fb-navbar .fb-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.fb-brand {
+  display: flex; align-items: center; gap: var(--fb-space-2);
+  font-family: var(--fb-font-heading); font-weight: 800; font-size: 22px;
+  color: var(--fb-text);
+}
+.fb-brand .fb-logo-mark {
+  width: 36px; height: 36px; display: inline-flex;
+  align-items: center; justify-content: center;
+  color: var(--fb-primary);
+}
+.fb-nav-links {
+  display: flex; align-items: center; gap: var(--fb-space-8);
+  list-style: none; margin: 0; padding: 0;
+}
+.fb-nav-links a {
+  color: var(--fb-text); font-weight: 500; font-size: 15px;
+  position: relative; padding-bottom: 4px;
+}
+.fb-nav-links a:hover, .fb-nav-links a.active { color: var(--fb-primary); }
+.fb-nav-links a.active::after {
+  content: ""; position: absolute; left: 0; bottom: -2px;
+  width: 100%; height: 2px; background: var(--fb-primary); border-radius: 2px;
+}
+.fb-nav-actions { display: flex; align-items: center; gap: var(--fb-space-3); }
+
+.fb-nav-toggle {
+  display: none; background: none; border: none; cursor: pointer;
+  color: var(--fb-text); padding: 6px;
+}
+
+/* ---------------- Sidebar (white, green active, Lucide icons) ---------------- */
+.fb-layout { display: flex; min-height: 100vh; }
+.fb-sidebar {
+  width: 260px; flex-shrink: 0;
+  background: var(--fb-surface);
+  border-right: 1px solid var(--fb-border);
+  padding: var(--fb-space-6) var(--fb-space-4);
+  display: flex; flex-direction: column;
+  position: sticky; top: 0; height: 100vh; overflow-y: auto;
+}
+.fb-sidebar-brand {
+  display: flex; align-items: center; gap: var(--fb-space-2);
+  font-family: var(--fb-font-heading); font-weight: 800; font-size: 20px;
+  padding: 0 var(--fb-space-3) var(--fb-space-6);
+}
+.fb-menu { list-style: none; margin: 0; padding: 0; flex: 1; }
+.fb-menu li { margin-bottom: var(--fb-space-1); }
+.fb-menu a {
+  display: flex; align-items: center; gap: var(--fb-space-3);
+  padding: 12px var(--fb-space-3);
+  border-radius: var(--fb-radius-md);
+  color: var(--fb-text-secondary); font-weight: 500; font-size: 15px;
+  transition: background var(--fb-transition), color var(--fb-transition);
+}
+.fb-menu a i, .fb-menu a svg { width: 20px; height: 20px; }
+.fb-menu a:hover { background: var(--fb-bg); color: var(--fb-text); }
+.fb-menu a.active { background: var(--fb-primary); color: #fff; box-shadow: var(--fb-shadow-sm); }
+.fb-menu a .fb-dot { margin-left: auto; }
+
+/* Sidebar promo card */
+.fb-promo {
+  margin-top: var(--fb-space-6);
+  background: var(--fb-primary);
+  color: #fff;
+  border-radius: var(--fb-radius-lg);
+  padding: var(--fb-space-4);
+  text-align: center;
+}
+.fb-promo h5 { color: #fff; font-size: 15px; margin-bottom: var(--fb-space-3); }
+.fb-promo a { color: #fff; font-weight: 600; font-size: 14px; }
+
+/* ---------------- Main content area ---------------- */
+.fb-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.fb-topbar {
+  height: 72px; display: flex; align-items: center; gap: var(--fb-space-4);
+  padding: 0 var(--fb-space-8);
+  background: var(--fb-glass-bg);
+  -webkit-backdrop-filter: blur(var(--fb-glass-blur));
+  backdrop-filter: blur(var(--fb-glass-blur));
+  border-bottom: 1px solid var(--fb-border);
+  position: sticky; top: 0; z-index: 900;
+}
+.fb-topbar .fb-search { flex: 1; max-width: 420px; }
+.fb-content { padding: var(--fb-space-8); }
+
+.fb-user-chip {
+  display: flex; align-items: center; gap: var(--fb-space-2);
+  cursor: pointer;
+}
+.fb-avatar {
+  width: 40px; height: 40px; border-radius: 50%;
+  object-fit: cover; background: var(--fb-primary-light);
+}
+
+/* ---------------- Grids ---------------- */
+.fb-grid { display: grid; gap: var(--fb-space-6); }
+.fb-grid-2 { grid-template-columns: repeat(2, 1fr); }
+.fb-grid-3 { grid-template-columns: repeat(3, 1fr); }
+.fb-grid-4 { grid-template-columns: repeat(4, 1fr); }
+
+/* ---------------- Footer ---------------- */
+.fb-footer {
+  background: var(--fb-surface);
+  border-top: 1px solid var(--fb-border);
+  padding: var(--fb-space-12) 0 var(--fb-space-6);
+  margin-top: var(--fb-space-16);
+}
+.fb-footer .fb-footer-grid {
+  display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: var(--fb-space-8);
+}
+.fb-footer h6 { font-family: var(--fb-font-heading); font-weight: 600; margin-bottom: var(--fb-space-4); }
+.fb-footer ul { list-style: none; padding: 0; margin: 0; }
+.fb-footer ul li { margin-bottom: var(--fb-space-2); }
+.fb-footer ul a { color: var(--fb-text-secondary); font-size: 14px; }
+.fb-footer-bottom {
+  border-top: 1px solid var(--fb-border);
+  margin-top: var(--fb-space-8); padding-top: var(--fb-space-6);
+  text-align: center; color: var(--fb-text-muted); font-size: 14px;
+}
+
+/* ---------------- Mobile bottom tab bar ---------------- */
+.fb-tabbar { display: none; }

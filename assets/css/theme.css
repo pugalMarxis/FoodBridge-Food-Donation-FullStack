@@ -1,0 +1,125 @@
+/* ==========================================================================
+   FoodBridge — theme.css
+   Core design tokens: colors, typography, spacing, radius, shadows.
+   Source of truth for the whole design system.
+   ========================================================================== */
+
+:root {
+  /* ---- Brand / Primary (Emerald) ---- */
+  --fb-primary: #10B981;
+  --fb-primary-hover: #059669;
+  --fb-primary-light: #D1FAE5;
+
+  /* ---- Surfaces & Background ---- */
+  --fb-bg: #F8F9FA;
+  --fb-surface: #FFFFFF;
+
+  /* ---- Text ---- */
+  --fb-text: #111827;
+  --fb-text-secondary: #6B7280;
+  --fb-text-muted: #9CA3AF;
+
+  /* ---- Border ---- */
+  --fb-border: #E5E7EB;
+
+  /* ---- Status ---- */
+  --fb-success: #22C55E;
+  --fb-warning: #F59E0B;
+  --fb-danger: #EF4444;
+  --fb-info: #3B82F6;
+
+  /* ---- Accent tints (for stat icons) ---- */
+  --fb-green-soft: #D1FAE5;
+  --fb-orange-soft: #FEF3C7;
+  --fb-blue-soft: #DBEAFE;
+  --fb-purple-soft: #EDE9FE;
+  --fb-purple: #8B5CF6;
+
+  /* ---- Spacing scale ---- */
+  --fb-space-1: 4px;
+  --fb-space-2: 8px;
+  --fb-space-3: 12px;
+  --fb-space-4: 16px;
+  --fb-space-6: 24px;
+  --fb-space-8: 32px;
+  --fb-space-12: 48px;
+  --fb-space-16: 64px;
+
+  /* ---- Border radius ---- */
+  --fb-radius-sm: 8px;
+  --fb-radius-md: 12px;
+  --fb-radius-lg: 18px;
+  --fb-radius-xl: 24px;
+  --fb-radius-pill: 999px;
+
+  /* ---- Shadows ---- */
+  --fb-shadow-sm: 0 5px 15px rgba(0,0,0,.05);
+  --fb-shadow-md: 0 10px 30px rgba(0,0,0,.08);
+  --fb-shadow-lg: 0 20px 45px rgba(0,0,0,.12);
+
+  /* ---- Glass ---- */
+  --fb-glass-bg: rgba(255,255,255,.65);
+  --fb-glass-border: rgba(255,255,255,.35);
+  --fb-glass-blur: 18px;
+
+  /* ---- Neumorphism ---- */
+  --fb-neu-dark: 8px 8px 18px rgba(0,0,0,.08);
+  --fb-neu-light: -8px -8px 18px rgba(255,255,255,.95);
+
+  /* ---- Typography ---- */
+  --fb-font-heading: 'Poppins', system-ui, -apple-system, sans-serif;
+  --fb-font-body: 'Inter', system-ui, -apple-system, sans-serif;
+
+  /* ---- Transition ---- */
+  --fb-transition: 0.3s ease;
+}
+
+/* ---- Base ---- */
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--fb-font-body);
+  font-size: 16px;
+  font-weight: 400;
+  color: var(--fb-text);
+  background-color: var(--fb-bg);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--fb-font-heading);
+  color: var(--fb-text);
+  margin: 0 0 var(--fb-space-4);
+  line-height: 1.2;
+}
+
+h1 { font-size: 48px; font-weight: 800; }
+h2 { font-size: 38px; font-weight: 700; }
+h3 { font-size: 30px; font-weight: 700; }
+h4 { font-size: 24px; font-weight: 600; }
+
+p { margin: 0 0 var(--fb-space-4); }
+
+a { color: var(--fb-primary); text-decoration: none; transition: color var(--fb-transition); }
+a:hover { color: var(--fb-primary-hover); }
+
+small, .fb-small { font-size: 14px; }
+.fb-caption { font-size: 12px; color: var(--fb-text-muted); }
+
+.fb-text-secondary { color: var(--fb-text-secondary); }
+.fb-text-muted { color: var(--fb-text-muted); }
+.fb-text-primary { color: var(--fb-primary); }
+
+/* Responsive heading sizes */
+@media (max-width: 768px) {
+  h1 { font-size: 34px; }
+  h2 { font-size: 28px; }
+  h3 { font-size: 24px; }
+  h4 { font-size: 20px; }
+}

@@ -1,0 +1,50 @@
+/* ==========================================================================
+   FoodBridge — utilities.css
+   Small helper classes (spacing, flex, text alignment).
+   ========================================================================== */
+
+/* Display & flex */
+.fb-flex { display: flex; }
+.fb-inline-flex { display: inline-flex; }
+.fb-items-center { align-items: center; }
+.fb-justify-between { justify-content: space-between; }
+.fb-justify-center { justify-content: center; }
+.fb-flex-col { flex-direction: column; }
+.fb-flex-wrap { flex-wrap: wrap; }
+.fb-flex-1 { flex: 1; }
+.fb-gap-1 { gap: var(--fb-space-1); }
+.fb-gap-2 { gap: var(--fb-space-2); }
+.fb-gap-3 { gap: var(--fb-space-3); }
+.fb-gap-4 { gap: var(--fb-space-4); }
+.fb-gap-6 { gap: var(--fb-space-6); }
+
+/* Text */
+.fb-text-center { text-align: center; }
+.fb-text-right { text-align: right; }
+.fb-fw-600 { font-weight: 600; }
+.fb-fw-700 { font-weight: 700; }
+.fb-fw-800 { font-weight: 800; }
+
+/* Margins */
+.fb-mt-2 { margin-top: var(--fb-space-2); }
+.fb-mt-3 { margin-top: var(--fb-space-3); }
+.fb-mt-4 { margin-top: var(--fb-space-4); }
+.fb-mt-6 { margin-top: var(--fb-space-6); }
+.fb-mt-8 { margin-top: var(--fb-space-8); }
+.fb-mb-2 { margin-bottom: var(--fb-space-2); }
+.fb-mb-3 { margin-bottom: var(--fb-space-3); }
+.fb-mb-4 { margin-bottom: var(--fb-space-4); }
+.fb-mb-6 { margin-bottom: var(--fb-space-6); }
+.fb-mb-8 { margin-bottom: var(--fb-space-8); }
+.fb-mb-0 { margin-bottom: 0; }
+
+/* Section spacing */
+.fb-section { padding: var(--fb-space-16) 0; }
+.fb-section-sm { padding: var(--fb-space-12) 0; }
+
+/* Misc */
+.fb-rounded-lg { border-radius: var(--fb-radius-lg); }
+.fb-rounded-xl { border-radius: var(--fb-radius-xl); }
+.fb-w-full { width: 100%; }
+.fb-relative { position: relative; }
+.fb-hidden { display: none; }

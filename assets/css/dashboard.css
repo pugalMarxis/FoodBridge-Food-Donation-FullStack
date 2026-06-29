@@ -1,0 +1,138 @@
+/* ==========================================================================
+   FoodBridge — dashboard.css
+   Dashboard-specific pieces: stat cards, chart cards, hero box, tables.
+   ========================================================================== */
+
+/* ---------------- Stat card ---------------- */
+.fb-stat {
+  background: var(--fb-surface);
+  border-radius: var(--fb-radius-lg);
+  padding: var(--fb-space-6);
+  box-shadow: var(--fb-neu-dark), var(--fb-neu-light);
+  transition: transform var(--fb-transition), box-shadow var(--fb-transition);
+}
+.fb-stat:hover { transform: translateY(-5px); box-shadow: var(--fb-shadow-lg); }
+.fb-stat-label { font-size: 14px; color: var(--fb-text-secondary); margin: 0 0 4px; }
+.fb-stat-value { font-family: var(--fb-font-heading); font-weight: 700; font-size: 28px; margin: 0; }
+.fb-stat-trend { font-size: 13px; font-weight: 600; color: var(--fb-success); }
+.fb-stat-trend.down { color: var(--fb-danger); }
+
+/* ---------------- Chart / panel card ---------------- */
+.fb-panel {
+  background: var(--fb-surface);
+  border-radius: var(--fb-radius-lg);
+  box-shadow: var(--fb-shadow-sm);
+  padding: var(--fb-space-6);
+}
+.fb-panel-head {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: var(--fb-space-4);
+}
+.fb-panel-head h4 { margin: 0; font-size: 18px; }
+.fb-view-all { font-size: 14px; font-weight: 600; color: var(--fb-primary); }
+
+/* ---------------- Tables (Modern Minimal, no glass/neu) ---------------- */
+.fb-table-wrap {
+  background: var(--fb-surface);
+  border-radius: 16px;
+  box-shadow: var(--fb-shadow-sm);
+  overflow: hidden;
+}
+.fb-table { width: 100%; border-collapse: collapse; }
+.fb-table thead th {
+  background: var(--fb-bg);
+  text-align: left;
+  font-size: 13px; font-weight: 600; color: var(--fb-text-secondary);
+  padding: 14px var(--fb-space-6);
+}
+.fb-table tbody td {
+  padding: 14px var(--fb-space-6);
+  border-top: 1px solid var(--fb-border);
+  font-size: 14px;
+}
+.fb-table tbody tr:hover { background: #FAFAFA; }
+
+/* ---------------- Hero (landing) ---------------- */
+.fb-hero {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  gap: var(--fb-space-12);
+  padding: var(--fb-space-16) 0 var(--fb-space-12);
+}
+.fb-hero h1 { margin-bottom: var(--fb-space-4); }
+.fb-hero .fb-hero-sub {
+  font-size: 17px; color: var(--fb-text-secondary);
+  max-width: 460px; margin-bottom: var(--fb-space-6);
+}
+.fb-hero-actions { display: flex; gap: var(--fb-space-3); flex-wrap: wrap; }
+
+/* Soft green organic blob behind hero image */
+.fb-hero-visual {
+  position: relative;
+  display: flex; align-items: center; justify-content: center;
+  min-height: 420px;
+}
+.fb-hero-blob {
+  position: absolute; inset: 0;
+  background: radial-gradient(circle at 60% 40%, var(--fb-primary-light), transparent 65%);
+  border-radius: 45% 55% 60% 40% / 50% 45% 55% 50%;
+  z-index: 0;
+}
+.fb-hero-box-frame {
+  position: relative; z-index: 1;
+  background: var(--fb-glass-bg);
+  -webkit-backdrop-filter: blur(var(--fb-glass-blur));
+  backdrop-filter: blur(var(--fb-glass-blur));
+  border: 1px solid var(--fb-glass-border);
+  border-radius: var(--fb-radius-xl);
+  padding: var(--fb-space-6);
+  box-shadow: var(--fb-shadow-lg);
+  max-width: 420px;
+}
+.fb-hero-box-frame img { width: 100%; border-radius: var(--fb-radius-lg); display: block; }
+
+/* Floating circular icon badges around hero image */
+.fb-float-badge {
+  position: absolute; z-index: 2;
+  width: 60px; height: 60px; border-radius: 50%;
+  background: var(--fb-surface);
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: var(--fb-shadow-md);
+  color: var(--fb-primary);
+}
+.fb-float-badge.top-left { top: 8%; left: 6%; }
+.fb-float-badge.bottom-left { bottom: 14%; left: 2%; }
+.fb-float-badge.right { top: 42%; right: 2%; }
+
+/* ---------------- Feature column ---------------- */
+.fb-feature { text-align: left; }
+.fb-feature .fb-feature-icon {
+  width: 52px; height: 52px; border-radius: var(--fb-radius-md);
+  background: var(--fb-primary-light); color: var(--fb-primary);
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: var(--fb-space-3);
+}
+.fb-feature h5 { font-family: var(--fb-font-heading); font-weight: 600; font-size: 17px; margin: 0 0 4px; }
+.fb-feature p { font-size: 14px; color: var(--fb-text-secondary); margin: 0; }
+
+/* ---------------- Stats bar (landing) ---------------- */
+.fb-stats-bar {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  background: var(--fb-surface);
+  border-radius: var(--fb-radius-lg);
+  box-shadow: var(--fb-shadow-md);
+  padding: var(--fb-space-6);
+  gap: var(--fb-space-4);
+}
+.fb-stats-bar .fb-statbar-item {
+  display: flex; align-items: center; gap: var(--fb-space-3);
+  justify-content: center;
+}
+.fb-statbar-num { font-family: var(--fb-font-heading); font-weight: 700; font-size: 24px; margin: 0; }
+.fb-statbar-label { font-size: 13px; color: var(--fb-text-secondary); margin: 0; }
+
+/* ---------------- Donut legend ---------------- */
+.fb-legend { list-style: none; padding: 0; margin: var(--fb-space-4) 0 0; }
+.fb-legend li { display: flex; align-items: center; gap: var(--fb-space-2); font-size: 13px; margin-bottom: var(--fb-space-2); }
+.fb-legend .fb-dotc { width: 10px; height: 10px; border-radius: 50%; }

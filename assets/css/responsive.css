@@ -1,0 +1,80 @@
+/* ==========================================================================
+   FoodBridge — responsive.css
+   Mobile-first breakpoints. Aligns with Bootstrap grid behaviour.
+   Last loaded so it can override layout defaults.
+   ========================================================================== */
+
+/* Tablet and below */
+@media (max-width: 992px) {
+  .fb-grid-4 { grid-template-columns: repeat(2, 1fr); }
+  .fb-grid-3 { grid-template-columns: repeat(2, 1fr); }
+  .fb-hero { grid-template-columns: 1fr; gap: var(--fb-space-8); text-align: center; }
+  .fb-hero .fb-hero-sub { margin-left: auto; margin-right: auto; }
+  .fb-hero-actions { justify-content: center; }
+  .fb-footer .fb-footer-grid { grid-template-columns: 1fr 1fr; }
+
+  /* Sidebar becomes off-canvas */
+  .fb-sidebar {
+    position: fixed; left: 0; top: 0; z-index: 1100;
+    transform: translateX(-100%);
+    transition: transform var(--fb-transition);
+    box-shadow: var(--fb-shadow-lg);
+  }
+  .fb-sidebar.open { transform: translateX(0); }
+  .fb-sidebar-backdrop {
+    display: none; position: fixed; inset: 0; z-index: 1050;
+    background: rgba(0,0,0,.4);
+  }
+  .fb-sidebar-backdrop.show { display: block; }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .fb-container { padding: 0 var(--fb-space-4); }
+
+  /* Navbar collapses */
+  .fb-nav-links {
+    display: none;
+    position: absolute; top: 72px; left: 0; right: 0;
+    flex-direction: column; align-items: flex-start;
+    gap: var(--fb-space-2);
+    background: var(--fb-surface);
+    padding: var(--fb-space-4) var(--fb-space-6);
+    box-shadow: var(--fb-shadow-md);
+  }
+  .fb-nav-links.open { display: flex; }
+  .fb-nav-toggle { display: inline-flex; }
+
+  .fb-grid-4, .fb-grid-3, .fb-grid-2 { grid-template-columns: 1fr; }
+  .fb-stats-bar { grid-template-columns: 1fr 1fr; gap: var(--fb-space-6); }
+  .fb-stats-bar .fb-statbar-item { justify-content: flex-start; }
+  .fb-footer .fb-footer-grid { grid-template-columns: 1fr; }
+  .fb-content { padding: var(--fb-space-4); }
+  .fb-topbar { padding: 0 var(--fb-space-4); }
+
+  /* Mobile bottom tab bar */
+  .fb-tabbar {
+    display: flex;
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 1000;
+    background: var(--fb-glass-bg);
+    -webkit-backdrop-filter: blur(var(--fb-glass-blur));
+    backdrop-filter: blur(var(--fb-glass-blur));
+    border-top: 1px solid var(--fb-border);
+    padding: var(--fb-space-2) 0;
+    justify-content: space-around;
+  }
+  .fb-tabbar a {
+    display: flex; flex-direction: column; align-items: center; gap: 2px;
+    font-size: 11px; color: var(--fb-text-muted);
+  }
+  .fb-tabbar a.active { color: var(--fb-primary); }
+  .fb-tabbar a i, .fb-tabbar a svg { width: 22px; height: 22px; }
+
+  body.fb-has-tabbar { padding-bottom: 64px; }
+}
+
+/* Small phones */
+@media (max-width: 480px) {
+  .fb-stats-bar { grid-template-columns: 1fr; }
+  h1 { font-size: 30px; }
+}

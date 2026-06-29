@@ -1,0 +1,46 @@
+/* ==========================================================================
+   FoodBridge — neumorphism.css
+   Soft neumorphism. Use ONLY for: dashboard cards, stat cards, feature cards,
+   search box, profile card, circular icon buttons.
+   NEVER on: tables, forms, data grids, main page background.
+   ========================================================================== */
+
+.fb-neu {
+  background: var(--fb-bg);
+  border-radius: var(--fb-radius-lg);
+  box-shadow: var(--fb-neu-dark), var(--fb-neu-light);
+}
+
+/* Stat / dashboard card */
+.fb-neu-card {
+  background: var(--fb-surface);
+  border-radius: var(--fb-radius-lg);
+  padding: var(--fb-space-6);
+  box-shadow: var(--fb-neu-dark), var(--fb-neu-light);
+  transition: transform var(--fb-transition), box-shadow var(--fb-transition);
+}
+
+.fb-neu-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--fb-shadow-lg);
+}
+
+/* Circular icon button (e.g. floating hero badges, notification bell) */
+.fb-neu-circle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--fb-surface);
+  box-shadow: var(--fb-neu-dark), var(--fb-neu-light);
+}
+
+/* Soft search box */
+.fb-neu-search {
+  background: var(--fb-surface);
+  border-radius: var(--fb-radius-md);
+  box-shadow: inset 3px 3px 8px rgba(0,0,0,.05), inset -3px -3px 8px rgba(255,255,255,.9);
+  border: 1px solid var(--fb-border);
+}
