@@ -85,7 +85,8 @@ $stmt = $conn->prepare(
 );
 $stmt->bind_param('i', $uid);
 $stmt->execute();
-$active = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+$activeJobs = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+
 $stmt->close();
 
 $stmt = $conn->prepare(
@@ -100,9 +101,9 @@ $stmt->execute();
 $done = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 $stmt->close();
 
-$activeKey  = 'deliveries';   // sidebar highlight key
 $page_title = 'My Deliveries';
-$active     = $activeKey;
+$active     = 'deliveries';   // sidebar highlight key
+
 require __DIR__ . '/includes/head.php';
 ?>
 <body class="fb-has-tabbar">
@@ -129,9 +130,10 @@ require __DIR__ . '/includes/head.php';
       <?= render_flash() ?>
 
       <!-- ACTIVE deliveries -->
-      <h4 class="fb-mb-4">Active Deliveries (<?= count($active) ?>)</h4>
+      <h4 class="fb-mb-4">Active Deliveries (<?= count($activeJobs) ?>)</h4>
 
-      <?php if (!$active): ?>
+      <?php if (!$activeJobs): ?>
+
         <div class="fb-panel fb-text-center fb-text-muted fb-mb-8" style="padding:40px 0;">
           <i data-lucide="package-open" style="width:44px;height:44px;"></i>
           <p class="fb-mb-3 fb-mt-3">No active deliveries right now.</p>
@@ -139,7 +141,7 @@ require __DIR__ . '/includes/head.php';
         </div>
       <?php else: ?>
         <div class="row g-4 fb-mb-8">
-          <?php foreach ($active as $t): ?>
+          <?php foreach ($activeJobs as $t): ?>
             <div class="col-lg-4 col-md-6">
               <div class="fb-card" style="height:100%;display:flex;flex-direction:column;">
 
