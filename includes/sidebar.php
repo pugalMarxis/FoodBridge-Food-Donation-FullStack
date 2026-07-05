@@ -34,6 +34,7 @@ $menus = [
     'receiver' => [
         ['dashboard', 'Dashboard',    'layout-dashboard', 'dashboard.php'],
         ['request',   'Request Food', 'hand-helping',     'request.php'],
+        ['browse',    'Browse Food',  'search',           'browse-food.php'],
         ['myrequests','My Requests',  'inbox',            'my-requests.php'],
         ['ratings',   'Ratings',      'star',             'ratings.php'],
         ['map',       'Live Map',     'map',              'map.php'],
