@@ -11,7 +11,7 @@ require_once __DIR__ . '/includes/queries.php';
 require_login();
 
 // ---- Paste your Google Maps key here ----
-$GOOGLE_MAPS_KEY = 'YOUR_GOOGLE_MAPS_API_KEY';
+$GOOGLE_MAPS_KEY = 'AIzaSyAVAnk32e7mtnUrEQcIg9vGUhv_aErCH18';
 $keyReady = ($GOOGLE_MAPS_KEY !== 'YOUR_GOOGLE_MAPS_API_KEY' && $GOOGLE_MAPS_KEY !== '');
 
 /* ------------------------------------------------------------------ *
@@ -120,7 +120,7 @@ require __DIR__ . '/includes/head.php';
             <i data-lucide="map-pin-off" style="width:40px;height:40px;"></i>
             <p class="fb-mb-0 fb-mt-3">No locations with GPS yet. Add latitude/longitude when posting food or requests to see pins.</p>
           </div>
-          
+
         <?php else: ?>
           <div class="fb-panel">
             <?php foreach ($markers as $m): ?>

@@ -21,10 +21,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $people   = (int) ($_POST['people'] ?? 1);
     $location = clean($_POST['location'] ?? '');
     $urgency  = $_POST['urgency'] ?? 'today';
+    // GPS coordinates (from the "Use My Location" button)
+    $latitude  = ($_POST['latitude'] ?? '')  !== '' ? (float) $_POST['latitude']  : null;
+    $longitude = ($_POST['longitude'] ?? '') !== '' ? (float) $_POST['longitude'] : null;
 
     $old = compact('foodType', 'desc', 'people', 'location', 'urgency');
 
-    // Check the inputs
     $errors = [];
     $allowedType = ['cooked', 'groceries', 'vegetables', 'fruits', 'other'];
     $allowedUrg  = ['urgent', 'today', 'anytime'];
@@ -34,17 +36,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($location === '')  $errors[] = 'Please enter your location.';
     if (!in_array($urgency, $allowedUrg, true)) $urgency = 'today';
 
-        if (!$errors) {
+    if (!$errors) {
         $stmt = $conn->prepare(
-            'INSERT INTO requests (receiver_id, food_type, description, people_count, location, urgency, status)
-             VALUES (?, ?, ?, ?, ?, ?, "pending")'
+            'INSERT INTO requests (receiver_id, food_type, description, people_count, location, latitude, longitude, urgency, status)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, "pending")'
         );
-        $stmt->bind_param('ississ', $uid, $foodType, $desc, $people, $location, $urgency);
-
+        $stmt->bind_param('issisdds', $uid, $foodType, $desc, $people, $location, $latitude, $longitude, $urgency);
         $stmt->execute();
         $stmt->close();
 
-        // Confirmation notification
         $title = 'Food request sent';
         $body  = 'Your request is now pending. We will notify you when it is approved.';
         $stmt = $conn->prepare('INSERT INTO notifications (user_id, title, body, icon) VALUES (?, ?, ?, "hand-helping")');
@@ -117,14 +117,24 @@ $types = [
                        value="<?= e($old['location']) ?>" placeholder="Enter your area / address" required>
               </div>
 
+              <!-- GPS: Use My Location -->
+              <div class="fb-form-group">
+                <input type="hidden" id="latitude"  name="latitude"  value="<?= e($_POST['latitude']  ?? '') ?>">
+                <input type="hidden" id="longitude" name="longitude" value="<?= e($_POST['longitude'] ?? '') ?>">
+                <button type="button" id="useLocationBtn" class="fb-btn fb-btn-secondary">
+                  <i data-lucide="map-pin"></i> Use My Location
+                </button>
+                <span id="locStatus" class="fb-small fb-text-muted" style="margin-left:10px;"></span>
+              </div>
+
               <div class="fb-form-group">
                 <label class="fb-label">How urgent?</label>
                 <div class="fb-grid fb-grid-3" style="gap:12px;">
                   <?php
                     $urgs = [
-                      'urgent'  => ['🔴', 'Very Urgent'],
+                      'urgent'  => ['●', 'Very Urgent'],
                       'today'   => ['🟡', 'Today'],
-                      'anytime' => ['🟢', 'Anytime'],
+                      'anytime' => ['○', 'Anytime'],
                     ];
                     foreach ($urgs as $val => $info):
                       $checked = ($old['urgency'] === $val) ? 'checked' : '';
@@ -155,8 +165,8 @@ $types = [
             <h4 class="fb-mt-4">How it works</h4>
             <ul class="fb-small fb-text-secondary" style="padding-left:18px;margin:0;">
               <li class="fb-mb-2">Fill this simple form.</li>
-              <li class="fb-mb-2">Your request goes to the admin.</li>
-              <li class="fb-mb-2">When approved, a donor or volunteer helps you.</li>
+              <li class="fb-mb-2">Tap "Use My Location" so volunteers can find you.</li>
+              <li class="fb-mb-2">A donor or volunteer helps you.</li>
               <li>You get a notification at every step.</li>
             </ul>
           </div>
@@ -183,5 +193,24 @@ $types = [
 
 <script src="https://unpkg.com/lucide@latest"></script>
 <script src="<?= url('assets/js/main.js') ?>"></script>
+<script>
+  document.getElementById('useLocationBtn')?.addEventListener('click', function () {
+    const status = document.getElementById('locStatus');
+    if (!navigator.geolocation) { status.textContent = 'GPS not supported on this browser.'; return; }
+    status.textContent = 'Getting your location...';
+    navigator.geolocation.getCurrentPosition(
+      function (pos) {
+        document.getElementById('latitude').value  = pos.coords.latitude;
+        document.getElementById('longitude').value = pos.coords.longitude;
+        status.textContent = '📍 Location captured!';
+        status.style.color = 'var(--fb-success)';
+      },
+      function () {
+        status.textContent = 'Could not get location. Please allow location access.';
+        status.style.color = 'var(--fb-danger)';
+      }
+    );
+  });
+</script>
 </body>
 </html>
