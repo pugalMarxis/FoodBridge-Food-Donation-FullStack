@@ -3,7 +3,6 @@ require_once __DIR__ . '/includes/config.php';
 require_once __DIR__ . '/includes/queries.php';
 
 require_login();
-// Givers and volunteers can donate; receivers are redirected to request page
 if (current_role() === 'admin') {
     redirect('admin/dashboard.php');
 }
@@ -25,10 +24,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $pickTime  = clean($_POST['pickup_time'] ?? '');
     $location  = clean($_POST['location'] ?? '');
     $notes     = clean($_POST['notes'] ?? '');
+    // GPS coordinates (from the "Use My Location" button)
+    $latitude  = ($_POST['latitude'] ?? '')  !== '' ? (float) $_POST['latitude']  : null;
+    $longitude = ($_POST['longitude'] ?? '') !== '' ? (float) $_POST['longitude'] : null;
 
     $old = compact('foodType', 'foodName', 'quantity', 'unit', 'pickDate', 'pickTime', 'location', 'notes');
 
-    // Validation
     $errors = [];
     $allowedTypes = ['cooked', 'groceries', 'vegetables', 'fruits', 'other'];
     if (!in_array($foodType, $allowedTypes, true)) $errors[] = 'Please choose a valid food type.';
@@ -41,14 +42,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $pickTime = $pickTime !== '' ? $pickTime : null;
 
         $stmt = $conn->prepare(
-            'INSERT INTO food_posts (user_id, food_type, food_name, quantity, unit, location, pickup_date, pickup_time, notes, status)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, "available")'
+            'INSERT INTO food_posts (user_id, food_type, food_name, quantity, unit, location, latitude, longitude, pickup_date, pickup_time, notes, status)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, "available")'
         );
-        $stmt->bind_param('issssssss', $uid, $foodType, $foodName, $quantity, $unit, $location, $pickDate, $pickTime, $notes);
+        $stmt->bind_param('isssssddsss', $uid, $foodType, $foodName, $quantity, $unit, $location, $latitude, $longitude, $pickDate, $pickTime, $notes);
         $stmt->execute();
         $stmt->close();
 
-        // Notify the donor (confirmation)
         $title = 'Donation posted: ' . $foodName;
         $body  = 'Your food donation is now visible to people in need.';
         $stmt = $conn->prepare('INSERT INTO notifications (user_id, title, body, icon) VALUES (?, ?, ?, "gift")');
@@ -142,6 +142,16 @@ $types = [
                        value="<?= e($old['location']) ?>" placeholder="Enter full pick-up address" required>
               </div>
 
+              <!-- GPS: Use My Location -->
+              <div class="fb-form-group">
+                <input type="hidden" id="latitude"  name="latitude"  value="<?= e($_POST['latitude']  ?? '') ?>">
+                <input type="hidden" id="longitude" name="longitude" value="<?= e($_POST['longitude'] ?? '') ?>">
+                <button type="button" id="useLocationBtn" class="fb-btn fb-btn-secondary">
+                  <i data-lucide="map-pin"></i> Use My Location
+                </button>
+                <span id="locStatus" class="fb-small fb-text-muted" style="margin-left:10px;"></span>
+              </div>
+
               <div class="fb-form-group">
                 <label class="fb-label" for="notes">Additional Notes (Optional)</label>
                 <textarea class="fb-textarea" id="notes" name="notes"
@@ -155,7 +165,6 @@ $types = [
           </div>
         </div>
 
-        <!-- Helper / tips card -->
         <div class="col-lg-4">
           <div class="fb-neu-card">
             <div class="fb-feature-icon" style="width:52px;height:52px;border-radius:12px;background:var(--fb-primary-light);color:var(--fb-primary);display:flex;align-items:center;justify-content:center;">
@@ -169,7 +178,7 @@ $types = [
             <ul class="fb-small fb-text-secondary" style="padding-left:18px;margin:0;">
               <li class="fb-mb-2">Add a clear food name & quantity.</li>
               <li class="fb-mb-2">Give an accurate pick-up address.</li>
-              <li>Set a realistic pick-up time window.</li>
+              <li>Tap "Use My Location" so it shows on the map.</li>
             </ul>
           </div>
         </div>
@@ -188,5 +197,24 @@ $types = [
 
 <script src="https://unpkg.com/lucide@latest"></script>
 <script src="<?= url('assets/js/main.js') ?>"></script>
+<script>
+  document.getElementById('useLocationBtn')?.addEventListener('click', function () {
+    const status = document.getElementById('locStatus');
+    if (!navigator.geolocation) { status.textContent = 'GPS not supported on this browser.'; return; }
+    status.textContent = 'Getting your location...';
+    navigator.geolocation.getCurrentPosition(
+      function (pos) {
+        document.getElementById('latitude').value  = pos.coords.latitude;
+        document.getElementById('longitude').value = pos.coords.longitude;
+        status.textContent = '📍 Location captured!';
+        status.style.color = 'var(--fb-success)';
+      },
+      function () {
+        status.textContent = 'Could not get location. Please allow location access.';
+        status.style.color = 'var(--fb-danger)';
+      }
+    );
+  });
+</script>
 </body>
 </html>
