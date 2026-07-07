@@ -18,8 +18,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_message'])) {
     if ($message === '') $errors[] = 'Please write a message.';
 
     if (!$errors) {
+        $stmt = $conn->prepare('INSERT INTO contact_messages (name, email, message) VALUES (?, ?, ?)');
+        $stmt->bind_param('sss', $name, $email, $message);
+        $stmt->execute();
+        $stmt->close();
+
         set_flash('success', 'Thank you, ' . $name . '! Your message has been sent. We will reply soon. 💚');
     } else {
+
         set_flash('error', implode(' ', $errors));
     }
     redirect('contact.php');
