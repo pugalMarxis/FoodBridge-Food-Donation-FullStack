@@ -6,7 +6,7 @@ require_login();
 if (current_role() === 'admin') {
     redirect('admin/dashboard.php');
 }
-//hhshsh
+
 $u   = current_user();
 $uid = (int) $u['id'];
 
