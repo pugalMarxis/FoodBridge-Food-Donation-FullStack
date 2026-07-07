@@ -20,7 +20,7 @@ $loggedIn = is_logged_in();
       <li><a href="<?= url('index.php#about') ?>">About Us</a></li>
       <li><a href="<?= url('index.php#how') ?>">How It Works</a></li>
       <li><a href="<?= url('index.php#donations') ?>">Donations</a></li>
-      <li><a href="<?= url('index.php#contact') ?>">Contact</a></li>
+      <li><a href="<?= url('index.phpcontact') ?>">Contact</a></li>
     </ul>
 
     <div class="fb-nav-actions">
