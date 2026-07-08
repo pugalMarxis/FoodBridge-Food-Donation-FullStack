@@ -31,6 +31,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_message'])) {
     redirect('contact.php');
 }
 
+
 $nav_active = 'contact';
 $page_title = 'Contact Us';
 require __DIR__ . '/includes/head.php';
@@ -39,7 +40,7 @@ require __DIR__ . '/includes/head.php';
 
 <?php require __DIR__ . '/includes/navbar.php'; ?>
 
-<!-- Header -->
+<!-- 'Header' -->
 <section class="fb-container fb-section-sm fb-text-center">
   <span class="fb-glass-pill fb-mb-4"><i data-lucide="mail" style="width:16px;height:16px;"></i> We'd love to hear from you</span>
   <h1>Contact <span class="fb-text-primary">Us</span></h1>
