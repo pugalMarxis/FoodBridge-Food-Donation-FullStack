@@ -1,5 +1,5 @@
 <?php
-/**
+/***
  * FoodBridge — admin/requests.php
  * Admin manages food requests: view all, approve, or reject.
  */
