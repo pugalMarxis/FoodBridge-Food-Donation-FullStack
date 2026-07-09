@@ -1,7 +1,8 @@
 <?php
 /**
  * FoodBridge — contact.php
- * Public "Contact Us" page with contact info and a message form.
+ * Public "Contact Us" page with contact info and a message form..
+ * 
  */
 require_once __DIR__ . '/includes/config.php';
 require_once __DIR__ . '/includes/logo.php';
