@@ -24,7 +24,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $pickTime  = clean($_POST['pickup_time'] ?? '');
     $location  = clean($_POST['location'] ?? '');
     $notes     = clean($_POST['notes'] ?? '');
-    // GPS coordinates (from the "Use My Location" button)
     $latitude  = ($_POST['latitude'] ?? '')  !== '' ? (float) $_POST['latitude']  : null;
     $longitude = ($_POST['longitude'] ?? '') !== '' ? (float) $_POST['longitude'] : null;
 
@@ -75,6 +74,8 @@ $types = [
     'other'      => 'Other',
 ];
 ?>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder@2.4.0/dist/Control.Geocoder.css"/>
 <body class="fb-has-tabbar">
 <div class="fb-layout">
 
@@ -142,14 +143,40 @@ $types = [
                        value="<?= e($old['location']) ?>" placeholder="Enter full pick-up address" required>
               </div>
 
-              <!-- GPS: Use My Location -->
               <div class="fb-form-group">
+                <label class="fb-label" for="area">Quick Area (optional)</label>
+                <select class="fb-select" id="area">
+                  <option value="">-- Jump to an area --</option>
+                  <option data-lat="6.9271" data-lng="79.8612">Colombo</option>
+                  <option data-lat="6.8448" data-lng="79.9265">Sri Jayawardenepura Kotte</option>
+                  <option data-lat="7.2083" data-lng="79.8358">Negombo</option>
+                  <option data-lat="7.2906" data-lng="80.6337">Kandy</option>
+                  <option data-lat="6.0535" data-lng="80.2210">Galle</option>
+                  <option data-lat="5.9549" data-lng="80.5550">Matara</option>
+                  <option data-lat="9.6615" data-lng="80.0255">Jaffna</option>
+                  <option data-lat="8.7514" data-lng="80.4971">Vavuniya</option>
+                  <option data-lat="8.5874" data-lng="81.2152">Trincomalee</option>
+                  <option data-lat="7.7170" data-lng="81.7000">Batticaloa</option>
+                  <option data-lat="8.3114" data-lng="80.4037">Anuradhapura</option>
+                  <option data-lat="7.4863" data-lng="80.3623">Kurunegala</option>
+                  <option data-lat="6.6828" data-lng="80.3992">Ratnapura</option>
+                  <option data-lat="6.9934" data-lng="81.0550">Badulla</option>
+                  <option data-lat="6.9497" data-lng="80.7891">Nuwara Eliya</option>
+                </select>
+              </div>
+
+              <div class="fb-form-group">
+                <label class="fb-label">Pin Your Exact Location</label>
+                <p class="fb-small fb-text-muted fb-mb-2">Search a place, or click the map to drop a pin on your exact spot.</p>
+                <div id="pickMap" style="height:320px;border-radius:12px;overflow:hidden;border:1px solid var(--fb-border);z-index:0;"></div>
                 <input type="hidden" id="latitude"  name="latitude"  value="<?= e($_POST['latitude']  ?? '') ?>">
                 <input type="hidden" id="longitude" name="longitude" value="<?= e($_POST['longitude'] ?? '') ?>">
-                <button type="button" id="useLocationBtn" class="fb-btn fb-btn-secondary">
-                  <i data-lucide="map-pin"></i> Use My Location
-                </button>
-                <span id="locStatus" class="fb-small fb-text-muted" style="margin-left:10px;"></span>
+                <div class="fb-mt-2">
+                  <button type="button" id="useLocationBtn" class="fb-btn fb-btn-secondary" style="padding:8px 14px;">
+                    <i data-lucide="crosshair"></i> Use My GPS
+                  </button>
+                  <span id="locStatus" class="fb-small fb-text-muted" style="margin-left:10px;"></span>
+                </div>
               </div>
 
               <div class="fb-form-group">
@@ -178,7 +205,7 @@ $types = [
             <ul class="fb-small fb-text-secondary" style="padding-left:18px;margin:0;">
               <li class="fb-mb-2">Add a clear food name & quantity.</li>
               <li class="fb-mb-2">Give an accurate pick-up address.</li>
-              <li>Tap "Use My Location" so it shows on the map.</li>
+              <li>Click the map to pin your exact location.</li>
             </ul>
           </div>
         </div>
@@ -197,24 +224,55 @@ $types = [
 
 <script src="https://unpkg.com/lucide@latest"></script>
 <script src="<?= url('assets/js/main.js') ?>"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet-control-geocoder@2.4.0/dist/Control.Geocoder.js"></script>
 <script>
+  const pickMap = L.map('pickMap').setView([7.8731, 80.7718], 7);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap', maxZoom: 19
+  }).addTo(pickMap);
+
+  let marker = null;
+  function setPin(lat, lng, zoom) {
+    document.getElementById('latitude').value  = (+lat).toFixed(6);
+    document.getElementById('longitude').value = (+lng).toFixed(6);
+    if (marker) { marker.setLatLng([lat, lng]); }
+    else {
+      marker = L.marker([lat, lng], { draggable: true }).addTo(pickMap);
+      marker.on('dragend', e => { const p = e.target.getLatLng(); setPin(p.lat, p.lng); });
+    }
+    pickMap.setView([lat, lng], zoom || pickMap.getZoom());
+    const s = document.getElementById('locStatus');
+    if (s) { s.textContent = '📍 Location pinned!'; s.style.color = 'var(--fb-success)'; }
+  }
+
+  pickMap.on('click', e => setPin(e.latlng.lat, e.latlng.lng));
+
+  L.Control.geocoder({ defaultMarkGeocode: false })
+    .on('markgeocode', e => { const c = e.geocode.center; setPin(c.lat, c.lng, 16); })
+    .addTo(pickMap);
+
+  document.getElementById('area')?.addEventListener('change', function () {
+    const opt = this.options[this.selectedIndex];
+    if (opt && opt.dataset.lat) setPin(+opt.dataset.lat, +opt.dataset.lng, 13);
+  });
+
   document.getElementById('useLocationBtn')?.addEventListener('click', function () {
     const status = document.getElementById('locStatus');
-    if (!navigator.geolocation) { status.textContent = 'GPS not supported on this browser.'; return; }
+    if (!navigator.geolocation) { status.textContent = 'GPS not supported.'; return; }
     status.textContent = 'Getting your location...';
     navigator.geolocation.getCurrentPosition(
-      function (pos) {
-        document.getElementById('latitude').value  = pos.coords.latitude;
-        document.getElementById('longitude').value = pos.coords.longitude;
-        status.textContent = '📍 Location captured!';
-        status.style.color = 'var(--fb-success)';
-      },
-      function () {
-        status.textContent = 'Could not get location. Please allow location access.';
-        status.style.color = 'var(--fb-danger)';
-      }
+      pos => setPin(pos.coords.latitude, pos.coords.longitude, 16),
+      ()  => { status.textContent = 'GPS not available. Please click the map instead.'; status.style.color = 'var(--fb-danger)'; },
+      { enableHighAccuracy: true, timeout: 10000 }
     );
   });
+
+  (function () {
+    const la = document.getElementById('latitude').value;
+    const lo = document.getElementById('longitude').value;
+    if (la && lo) setPin(+la, +lo, 15);
+  })();
 </script>
 </body>
 </html>

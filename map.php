@@ -1,25 +1,14 @@
 <?php
 /**
- * FoodBridge — map.php
- * Live Map: green pins = available food, red pins = people needing help.
- *
- * SETUP: paste your free Google Maps API key below (replace YOUR_GOOGLE_MAPS_API_KEY).
+ * FoodBridge — map.php  (FREE OpenStreetMap, no API key)
  */
 require_once __DIR__ . '/includes/config.php';
 require_once __DIR__ . '/includes/queries.php';
 
 require_login();
 
-// ---- Paste your Google Maps key here ----
-$GOOGLE_MAPS_KEY = 'AIzaSyAVAnk32e7mtnUrEQcIg9vGUhv_aErCH18';
-$keyReady = ($GOOGLE_MAPS_KEY !== 'YOUR_GOOGLE_MAPS_API_KEY' && $GOOGLE_MAPS_KEY !== '');
-
-/* ------------------------------------------------------------------ *
- *  Build map markers from items that HAVE coordinates
- * ------------------------------------------------------------------ */
 $markers = [];
 
-// Available food (green)
 $foodRows = $conn->query(
     "SELECT id, food_name, quantity, unit, location, latitude, longitude
      FROM food_posts
@@ -36,7 +25,6 @@ foreach ($foodRows as $f) {
     ];
 }
 
-// Active requests (red)
 $reqRows = $conn->query(
     "SELECT id, description, people_count, location, latitude, longitude
      FROM requests
@@ -57,6 +45,7 @@ $active     = 'map';
 $page_title = 'Live Map';
 require __DIR__ . '/includes/head.php';
 ?>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <body>
 <div class="fb-layout">
 
@@ -67,7 +56,6 @@ require __DIR__ . '/includes/head.php';
 
     <main class="fb-content fb-anim-fade">
 
-      <!-- Header -->
       <div class="fb-flex fb-justify-between fb-items-center fb-flex-wrap fb-gap-4 fb-mb-4">
         <div>
           <h3 class="fb-mb-0">Live Map 🗺️</h3>
@@ -85,42 +73,17 @@ require __DIR__ . '/includes/head.php';
 
       <?= render_flash() ?>
 
-      <?php if (!$keyReady): ?>
-        <!-- Setup instructions when no key yet -->
-        <div class="fb-panel fb-mb-6" style="background:var(--fb-primary-light);border:none;">
-          <h4 class="fb-mb-2"><i data-lucide="key-round"></i> Add your free Google Maps key</h4>
-          <p class="fb-text-secondary fb-mb-2">The map needs a free Google key to load. Steps:</p>
-          <ol class="fb-text-secondary fb-mb-0" style="padding-left:20px;line-height:1.9;">
-            <li>Go to <b>console.cloud.google.com</b> and sign in</li>
-            <li>Create a project → enable <b>Maps JavaScript API</b></li>
-            <li>Create an <b>API key</b> and copy it</li>
-            <li>Open <b>map.php</b> and paste it into <code>$GOOGLE_MAPS_KEY</code></li>
-          </ol>
-        </div>
-      <?php endif; ?>
-
-      <!-- Map area -->
       <div class="fb-panel" style="padding:0;overflow:hidden;">
-        <div id="map" style="width:100%;height:520px;background:#EAEFEA;
-             display:flex;align-items:center;justify-content:center;color:var(--fb-text-muted);">
-          <?php if (!$keyReady): ?>
-            <div class="fb-text-center">
-              <i data-lucide="map" style="width:56px;height:56px;"></i>
-              <p class="fb-mt-3 fb-mb-0">Map will appear here once your Google key is added.</p>
-            </div>
-          <?php endif; ?>
-        </div>
+        <div id="map" style="width:100%;height:520px;z-index:0;"></div>
       </div>
 
-      <!-- Text fallback list (always useful) -->
       <div class="fb-mt-6">
         <h4 class="fb-mb-3">Locations (<?= count($markers) ?>)</h4>
         <?php if (!$markers): ?>
           <div class="fb-panel fb-text-center fb-text-muted" style="padding:28px 0;">
             <i data-lucide="map-pin-off" style="width:40px;height:40px;"></i>
-            <p class="fb-mb-0 fb-mt-3">No locations with GPS yet. Add latitude/longitude when posting food or requests to see pins.</p>
+            <p class="fb-mb-0 fb-mt-3">No locations yet. Pin a location when posting food or a request to see it here.</p>
           </div>
-
         <?php else: ?>
           <div class="fb-panel">
             <?php foreach ($markers as $m): ?>
@@ -149,49 +112,31 @@ require __DIR__ . '/includes/head.php';
 
 <script src="https://unpkg.com/lucide@latest"></script>
 <script src="<?= url('assets/js/main.js') ?>"></script>
-
-<?php if ($keyReady): ?>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
   const FB_MARKERS = <?= json_encode($markers) ?>;
+  const DETAILS_URL = '<?= url('food-details.php?id=') ?>';
 
-  function initMap() {
-    // Center on first marker, or default to Colombo, Sri Lanka
-    const center = FB_MARKERS.length
-      ? { lat: FB_MARKERS[0].lat, lng: FB_MARKERS[0].lng }
-      : { lat: 6.9271, lng: 79.8612 };
+  const center = FB_MARKERS.length ? [FB_MARKERS[0].lat, FB_MARKERS[0].lng] : [7.8731, 80.7718];
+  const zoom   = FB_MARKERS.length ? 12 : 7;
 
-    const map = new google.maps.Map(document.getElementById('map'), {
-      center: center,
-      zoom: 12,
-    });
+  const map = L.map('map').setView(center, zoom);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap', maxZoom: 19
+  }).addTo(map);
 
-    const info = new google.maps.InfoWindow();
+  FB_MARKERS.forEach(m => {
+    const color = m.type === 'food' ? '#10B981' : '#EF4444';
+    const dot = L.circleMarker([m.lat, m.lng], {
+      radius: 10, color: '#fff', weight: 2, fillColor: color, fillOpacity: 1
+    }).addTo(map);
 
-    FB_MARKERS.forEach(m => {
-      const marker = new google.maps.Marker({
-        position: { lat: m.lat, lng: m.lng },
-        map: map,
-        title: m.title,
-        icon: m.type === 'food'
-          ? 'http://maps.google.com/mapfiles/ms/icons/green-dot.png'
-          : 'http://maps.google.com/mapfiles/ms/icons/red-dot.png',
-      });
-
-      marker.addListener('click', () => {
-        let html = '<b>' + m.title + '</b><br>' + m.info;
-        if (m.type === 'food') {
-          html += '<br><a href="<?= url('food-details.php?id=') ?>' + m.id + '">View details</a>';
-        }
-        info.setContent(html);
-        info.open(map, marker);
-      });
-    });
-  }
+    let html = '<b>' + m.title + '</b><br>' + m.info;
+    if (m.type === 'food') {
+      html += '<br><a href="' + DETAILS_URL + m.id + '">View details</a>';
+    }
+    dot.bindPopup(html);
+  });
 </script>
-<script async defer
-  src="https://maps.googleapis.com/maps/api/js?key=<?= e($GOOGLE_MAPS_KEY) ?>&callback=initMap">
-</script>
-<?php endif; ?>
-
 </body>
 </html>
