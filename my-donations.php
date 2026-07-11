@@ -10,6 +10,57 @@ if (current_role() === 'admin') {
 $u   = current_user();
 $uid = (int) $u['id'];
 
+// Handle "Remove donation" — only the owner's OWN, still-available donations
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['remove_donation'])) {
+    $postId = (int) ($_POST['post_id'] ?? 0);
+    $stmt = $conn->prepare("DELETE FROM food_posts WHERE id = ? AND user_id = ? AND status = 'available'");
+    $stmt->bind_param('ii', $postId, $uid);
+    $stmt->execute();
+    $removed = $stmt->affected_rows > 0;
+    $stmt->close();
+    if ($removed) {
+        set_flash('success', 'Donation removed. It no longer shows on the map.');
+    } else {
+        set_flash('error', 'Could not remove it (maybe someone already claimed it).');
+    }
+    redirect('my-donations.php');
+}
+
+// Handle "Mark as Given" — completes a direct pickup (no volunteer)
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['mark_given'])) {
+    $postId = (int) ($_POST['post_id'] ?? 0);
+    $stmt = $conn->prepare("UPDATE food_posts SET status = 'completed' WHERE id = ? AND user_id = ? AND status = 'claimed'");
+    $stmt->bind_param('ii', $postId, $uid);
+    $stmt->execute();
+    $ok = $stmt->affected_rows > 0;
+    $stmt->close();
+
+    if ($ok) {
+        $stmt = $conn->prepare("UPDATE requests SET status = 'delivered' WHERE food_post_id = ? AND status IN ('pending','approved','assigned')");
+        $stmt->bind_param('i', $postId);
+        $stmt->execute();
+        $stmt->close();
+
+        $stmt = $conn->prepare('SELECT receiver_id FROM requests WHERE food_post_id = ? LIMIT 1');
+        $stmt->bind_param('i', $postId);
+        $stmt->execute();
+        $row = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
+        if ($row) {
+            $title = 'Food received 🎉';
+            $body  = 'Enjoy your meal! Thank you for using FoodBridge.';
+            $stmt  = $conn->prepare("INSERT INTO notifications (user_id, title, body, icon) VALUES (?, ?, ?, 'party-popper')");
+            $stmt->bind_param('iss', $row['receiver_id'], $title, $body);
+            $stmt->execute();
+            $stmt->close();
+        }
+        set_flash('success', 'Thank you! This donation is now Completed. 🎉');
+    } else {
+        set_flash('error', 'Could not update that donation.');
+    }
+    redirect('my-donations.php');
+}
+
 // Food this user donated
 $donations = recent_donations($uid, 100);
 
@@ -67,6 +118,7 @@ require __DIR__ . '/includes/head.php';
                 <th>Pick-up</th>
                 <th>Status</th>
                 <th>Date</th>
+                <th class="fb-text-right">Action</th>
               </tr>
             </thead>
             <tbody>
@@ -88,6 +140,25 @@ require __DIR__ . '/includes/head.php';
                 </td>
                 <td><span class="fb-badge <?= status_badge_class($d['status']) ?>"><?= ucfirst($d['status']) ?></span></td>
                 <td class="fb-text-muted fb-small"><?= time_ago($d['created_at']) ?></td>
+                <td class="fb-text-right">
+                  <?php if ($d['status'] === 'available'): ?>
+                    <form method="post" onsubmit="return confirm('Remove this donation? It will be taken off the map.');">
+                      <input type="hidden" name="post_id" value="<?= (int) $d['id'] ?>">
+                      <button type="submit" name="remove_donation" class="fb-btn fb-btn-danger" style="padding:6px 12px;">
+                        <i data-lucide="trash-2" style="width:14px;height:14px;"></i>
+                      </button>
+                    </form>
+                  <?php elseif ($d['status'] === 'claimed'): ?>
+                    <form method="post" onsubmit="return confirm('Mark this food as given to the person?');">
+                      <input type="hidden" name="post_id" value="<?= (int) $d['id'] ?>">
+                      <button type="submit" name="mark_given" class="fb-btn fb-btn-success" style="padding:6px 12px;">
+                        <i data-lucide="check-check" style="width:14px;height:14px;"></i> Given
+                      </button>
+                    </form>
+                  <?php else: ?>
+                    <span class="fb-text-muted">—</span>
+                  <?php endif; ?>
+                </td>
               </tr>
               <?php endforeach; ?>
             </tbody>

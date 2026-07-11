@@ -19,6 +19,8 @@ $menus = [
         ['requests',  'Food Requests',  'hand-helping',     'admin/requests.php'],
         ['users',     'Users',          'users',            'admin/users.php'],
         ['messages',  'Messages',       'mail',             'admin/messages.php'],
+        ['smsreply',  'SMS Replies',    'message-circle',   'sms-reply.php'],
+
         ['reports',   'Reports',        'bar-chart-3',      'admin/reports.php'],
         ['notifications', 'Notifications', 'bell',          'notifications.php'],
         ['profile',   'Profile',        'user',             'profile.php'],

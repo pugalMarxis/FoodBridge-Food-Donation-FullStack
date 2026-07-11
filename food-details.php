@@ -1,8 +1,6 @@
 <?php
 /**
  * FoodBridge — food-details.php
- * Full details of one donated food item. Receivers can claim it.
- * Open with:  food-details.php?id=123
  */
 require_once __DIR__ . '/includes/config.php';
 require_once __DIR__ . '/includes/queries.php';
@@ -13,18 +11,16 @@ $u    = current_user();
 $uid  = (int) $u['id'];
 $role = $u['role'];
 
-/* ------------------------------------------------------------------ *
- *  Handle "Claim This Food" (POST)
- * ------------------------------------------------------------------ */
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['claim_food'])) {
     $postId = (int) ($_POST['post_id'] ?? 0);
+    // 'delivery' = needs a volunteer, 'self' = will collect it themselves
+    $mode   = ($_POST['claim_food'] === 'delivery') ? 'delivery' : 'self';
 
     if ($role !== 'receiver') {
         set_flash('error', 'Only receivers can claim food.');
         redirect('food-details.php?id=' . $postId);
     }
 
-    // Load the post
     $stmt = $conn->prepare('SELECT * FROM food_posts WHERE id = ? LIMIT 1');
     $stmt->bind_param('i', $postId);
     $stmt->execute();
@@ -40,7 +36,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['claim_food'])) {
         redirect('food-details.php?id=' . $postId);
     }
 
-    // Claim only if still available (safety lock)
     $stmt = $conn->prepare("UPDATE food_posts SET status = 'claimed' WHERE id = ? AND status = 'available'");
     $stmt->bind_param('i', $postId);
     $stmt->execute();
@@ -48,36 +43,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['claim_food'])) {
     $stmt->close();
 
     if ($claimed) {
-        // Create a linked request so a volunteer can deliver it
-        $desc = $post['food_name'];
-        $loc  = $post['location'];
+        // "delivery" -> 'approved' (volunteers can pick up) | "self" -> 'assigned' (no volunteer needed)
+        $desc  = $post['food_name'];
+        $loc   = $post['location'];
         $ftype = $post['food_type'];
+        $reqStatus = ($mode === 'delivery') ? 'approved' : 'assigned';
         $stmt = $conn->prepare(
             "INSERT INTO requests (receiver_id, food_post_id, food_type, description, people_count, location, urgency, status)
-             VALUES (?, ?, ?, ?, 1, ?, 'today', 'approved')"
+             VALUES (?, ?, ?, ?, 1, ?, 'today', ?)"
         );
-        $stmt->bind_param('iisss', $uid, $postId, $ftype, $desc, $loc);
+        $stmt->bind_param('iissss', $uid, $postId, $ftype, $desc, $loc, $reqStatus);
         $stmt->execute();
         $stmt->close();
-        // Notify the giver (with the receiver's phone so they can connect directly)
+
         $title = 'Your donation was claimed 🎉';
         $body  = $u['name'] . ' claimed "' . $post['food_name'] . '". Call them: ' . $u['phone'];
-
         $stmt  = $conn->prepare("INSERT INTO notifications (user_id, title, body, icon) VALUES (?, ?, ?, 'hand')");
         $stmt->bind_param('iss', $post['user_id'], $title, $body);
         $stmt->execute();
         $stmt->close();
 
-        set_flash('success', 'You claimed this food! A volunteer will help deliver it. 🍱');
+        if ($mode === 'delivery') {
+            set_flash('success', 'You claimed this food! A volunteer can now deliver it to you. 🚴');
+        } else {
+            set_flash('success', 'You claimed this food! Please call the donor and collect it yourself. 🍱');
+        }
     } else {
         set_flash('error', 'Sorry, this food was already claimed.');
     }
     redirect('food-details.php?id=' . $postId);
 }
 
-/* ------------------------------------------------------------------ *
- *  Load the food item for viewing
- * ------------------------------------------------------------------ */
 $id = (int) ($_GET['id'] ?? 0);
 $stmt = $conn->prepare(
     'SELECT fp.*, u.name AS donor, u.phone AS donor_phone
@@ -97,7 +93,6 @@ if (!$food) {
 $isOwner    = ((int) $food['user_id'] === $uid);
 $canClaim   = ($role === 'receiver' && $food['status'] === 'available' && !$isOwner);
 
-// Did the current receiver already claim this food? (so we can show the donor's phone)
 $claimedByMe = false;
 if ($role === 'receiver') {
     $stmt = $conn->prepare('SELECT id FROM requests WHERE food_post_id = ? AND receiver_id = ? LIMIT 1');
@@ -106,7 +101,6 @@ if ($role === 'receiver') {
     $claimedByMe = (bool) $stmt->get_result()->fetch_assoc();
     $stmt->close();
 }
-
 
 $active     = '';
 $page_title = 'Food Details';
@@ -122,7 +116,6 @@ require __DIR__ . '/includes/head.php';
 
     <main class="fb-content fb-anim-fade">
 
-      <!-- Back -->
       <button onclick="history.back()" class="fb-btn fb-btn-secondary fb-mb-4" style="padding:8px 14px;">
         <i data-lucide="arrow-left"></i> Back
       </button>
@@ -131,7 +124,6 @@ require __DIR__ . '/includes/head.php';
 
       <div class="row g-4">
 
-        <!-- Left: photo / icon -->
         <div class="col-lg-5">
           <div class="fb-panel fb-text-center">
             <?php if (!empty($food['photo'])): ?>
@@ -152,7 +144,6 @@ require __DIR__ . '/includes/head.php';
           </div>
         </div>
 
-        <!-- Right: details -->
         <div class="col-lg-7">
           <div class="fb-panel">
             <h3 class="fb-mb-1"><?= e($food['food_name']) ?></h3>
@@ -188,13 +179,21 @@ require __DIR__ . '/includes/head.php';
               </div>
             <?php endif; ?>
 
-            <!-- Actions -->
             <?php if ($canClaim): ?>
-              <form method="post" onsubmit="return confirm('Claim this food?');">
+              <p class="fb-fw-600 fb-mb-1">Claim this food 🍱</p>
+              <p class="fb-small fb-text-secondary fb-mb-3">How will you get it?</p>
+              <form method="post">
                 <input type="hidden" name="post_id" value="<?= (int) $food['id'] ?>">
-                <button type="submit" name="claim_food" class="fb-btn fb-btn-primary fb-btn-lg" style="width:100%;">
-                  <i data-lucide="hand-helping"></i> Claim This Food
-                </button>
+                <div class="fb-grid fb-grid-2" style="gap:12px;">
+                  <button type="submit" name="claim_food" value="self" class="fb-btn fb-btn-primary fb-btn-lg"
+                          onclick="return confirm('Claim and collect it yourself? No volunteer will be requested.');">
+                    <i data-lucide="hand-helping"></i> I'll Collect Myself
+                  </button>
+                  <button type="submit" name="claim_food" value="delivery" class="fb-btn fb-btn-secondary fb-btn-lg"
+                          onclick="return confirm('Claim and request a volunteer to deliver it?');">
+                    <i data-lucide="bike"></i> I Need Delivery
+                  </button>
+                </div>
               </form>
             <?php elseif ($isOwner): ?>
               <div class="fb-panel" style="background:var(--fb-primary-light);border:none;">
@@ -202,25 +201,35 @@ require __DIR__ . '/includes/head.php';
                   <i data-lucide="info" style="width:16px;height:16px;"></i> This is your donation.
                 </p>
               </div>
-                      <?php elseif ($claimedByMe): ?>
+            <?php elseif ($claimedByMe): ?>
               <div class="fb-panel" style="background:var(--fb-primary-light);border:none;">
                 <p class="fb-fw-600 fb-mb-2" style="color:var(--fb-primary-hover);">
                   <i data-lucide="check-circle" style="width:18px;height:18px;"></i> You claimed this food!
                 </p>
                 <p class="fb-small fb-text-secondary fb-mb-3">Contact the donor to arrange pick-up:</p>
-                <div class="fb-flex fb-items-center fb-gap-3">
+
+                  <div class="fb-flex fb-items-center fb-gap-3">
                   <a href="tel:<?= e($food['donor_phone']) ?>" class="fb-btn fb-btn-primary">
                     <i data-lucide="phone"></i> Call <?= e($food['donor']) ?>
                   </a>
                   <span class="fb-fw-600"><?= e($food['donor_phone']) ?></span>
                 </div>
+                <?php
+                  $gdest = ($food['latitude'] !== null && $food['longitude'] !== null)
+                         ? $food['latitude'] . ',' . $food['longitude']
+                         : urlencode($food['location'] ?? '');
+                ?>
+                <a href="https://www.google.com/maps/dir/?api=1&destination=<?= $gdest ?>" target="_blank"
+                   class="fb-btn fb-btn-secondary fb-mt-3" style="width:100%;">
+                  <i data-lucide="navigation"></i> Get Directions to Donor
+                </a>
               </div>
+
             <?php elseif ($food['status'] !== 'available'): ?>
               <div class="fb-panel fb-text-center fb-text-muted" style="padding:16px;">
                 <i data-lucide="lock" style="width:20px;height:20px;"></i>
                 This food is no longer available.
               </div>
-
             <?php else: ?>
               <p class="fb-text-muted fb-small fb-mb-0">Only receivers can claim food items.</p>
             <?php endif; ?>

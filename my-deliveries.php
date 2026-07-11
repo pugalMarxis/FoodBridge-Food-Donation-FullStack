@@ -176,13 +176,24 @@ require __DIR__ . '/includes/head.php';
                   </div>
                 </div>
 
-                <form method="post" style="margin-top:auto;padding-top:16px;"
-                      onsubmit="return confirm('Mark this delivery as complete?');">
-                  <input type="hidden" name="task_id" value="<?= (int) $t['id'] ?>">
-                  <button type="submit" name="mark_delivered" class="fb-btn fb-btn-primary" style="width:100%;">
-                    <i data-lucide="check-check"></i> Mark as Delivered
-                  </button>
-                </form>
+                <?php
+                  $dest = ($t['latitude'] !== null && $t['longitude'] !== null)
+                        ? $t['latitude'] . ',' . $t['longitude']
+                        : urlencode($t['location'] ?? '');
+                ?>
+                <div style="margin-top:auto;padding-top:16px;">
+                  <a href="https://www.google.com/maps/dir/?api=1&destination=<?= $dest ?>" target="_blank"
+                     class="fb-btn fb-btn-secondary fb-mb-2" style="width:100%;">
+                    <i data-lucide="navigation"></i> Get Directions
+                  </a>
+                  <form method="post" onsubmit="return confirm('Mark this delivery as complete?');">
+                    <input type="hidden" name="task_id" value="<?= (int) $t['id'] ?>">
+                    <button type="submit" name="mark_delivered" class="fb-btn fb-btn-primary" style="width:100%;">
+                      <i data-lucide="check-check"></i> Mark as Delivered
+                    </button>
+                  </form>
+                </div>
+
 
               </div>
             </div>

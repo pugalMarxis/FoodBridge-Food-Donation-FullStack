@@ -248,9 +248,15 @@ $types = [
 
   pickMap.on('click', e => setPin(e.latlng.lat, e.latlng.lng));
 
-  L.Control.geocoder({ defaultMarkGeocode: false })
+    L.Control.geocoder({
+    defaultMarkGeocode: false,
+    collapsed: false,
+    placeholder: 'Search your town or area...',
+    geocoder: L.Control.Geocoder.photon()   // free, gives suggestions as you type
+  })
     .on('markgeocode', e => { const c = e.geocode.center; setPin(c.lat, c.lng, 16); })
     .addTo(pickMap);
+
 
   document.getElementById('area')?.addEventListener('change', function () {
     const opt = this.options[this.selectedIndex];
