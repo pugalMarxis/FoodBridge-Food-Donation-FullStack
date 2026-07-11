@@ -22,6 +22,17 @@ $myRequests  = count_user_requests($uid);
 $approved    = count_user_approved($uid);
 $helped      = count_people_helped($uid);
 
+// People this giver is helping (requests they took from the map)
+$helpingCount = 0;
+if ($role === 'giver') {
+    $stmt = $conn->prepare("SELECT COUNT(*) c FROM requests WHERE volunteer_id = ? AND status IN ('assigned','delivered')");
+    $stmt->bind_param('i', $uid);
+    $stmt->execute();
+    $helpingCount = (int) $stmt->get_result()->fetch_assoc()['c'];
+    $stmt->close();
+}
+
+
 $donations = recent_donations($uid, 4);
 $requests  = recent_requests($uid, 4);
 
@@ -93,6 +104,26 @@ require __DIR__ . '/includes/head.php';
           </div>
         </div>
       </div>
+
+            <!-- Giver: People I'm Helping (encouragement) -->
+      <?php if ($role === 'giver'): ?>
+      <div class="fb-panel fb-mb-8" style="background:var(--fb-primary-light);border:none;">
+        <div class="fb-flex fb-items-center fb-justify-between fb-flex-wrap fb-gap-4">
+          <div class="fb-flex fb-items-center fb-gap-3">
+            <span class="fb-stat-icon green"><i data-lucide="heart-handshake"></i></span>
+            <div>
+              <h4 class="fb-mb-0" style="color:var(--fb-primary-hover);">
+                You are helping <?= $helpingCount ?> <?= $helpingCount === 1 ? 'person' : 'people' ?> 💚
+              </h4>
+              <p class="fb-text-secondary fb-mb-0">Thank you for your kindness. Every meal changes a life.</p>
+            </div>
+          </div>
+          <a href="<?= url('map.php') ?>" class="fb-btn fb-btn-primary"><i data-lucide="map"></i> Help More on the Map</a>
+        </div>
+      </div>
+      <?php endif; ?>
+
+
 
       <!-- Recent activity -->
       <div class="row g-4">

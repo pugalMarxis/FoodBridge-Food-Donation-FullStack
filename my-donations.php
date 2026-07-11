@@ -10,8 +10,20 @@ if (current_role() === 'admin') {
 $u   = current_user();
 $uid = (int) $u['id'];
 
-// Get all donations made by this user (reuse the recent query with a big limit)
+// Food this user donated
 $donations = recent_donations($uid, 100);
+
+// People this user is helping (requests they took from the map)
+$stmt = $conn->prepare(
+    "SELECT r.*, u.name AS requester, u.phone AS req_phone
+     FROM requests r JOIN users u ON u.id = r.receiver_id
+     WHERE r.volunteer_id = ? AND r.status IN ('assigned','delivered')
+     ORDER BY r.created_at DESC"
+);
+$stmt->bind_param('i', $uid);
+$stmt->execute();
+$helping = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+$stmt->close();
 
 $active = 'mydonations';
 $page_title = 'My Donations';
@@ -29,7 +41,7 @@ require __DIR__ . '/includes/head.php';
 
       <div class="fb-flex fb-justify-between fb-items-center fb-flex-wrap fb-gap-4 fb-mb-6">
         <div>
-          <h3 class="fb-mb-0">My Donations 📋</h3>
+          <h3 class="fb-mb-0">My Donations ▪</h3>
           <p class="fb-text-secondary fb-mb-0">All the food you have shared.</p>
         </div>
         <a href="<?= url('donate.php') ?>" class="fb-btn fb-btn-primary"><i data-lucide="gift"></i> Donate Food</a>
@@ -38,7 +50,6 @@ require __DIR__ . '/includes/head.php';
       <?= render_flash() ?>
 
       <?php if (!$donations): ?>
-        <!-- Empty state -->
         <div class="fb-panel fb-text-center" style="padding:56px 24px;">
           <i data-lucide="package-open" style="width:56px;height:56px;color:var(--fb-text-muted);"></i>
           <h4 class="fb-mt-4 fb-mb-2">No donations yet</h4>
@@ -46,7 +57,6 @@ require __DIR__ . '/includes/head.php';
           <a href="<?= url('donate.php') ?>" class="fb-btn fb-btn-primary"><i data-lucide="plus-circle"></i> Donate Now</a>
         </div>
       <?php else: ?>
-        <!-- Donations table -->
         <div class="fb-table-wrap">
           <table class="fb-table">
             <thead>
@@ -78,6 +88,50 @@ require __DIR__ . '/includes/head.php';
                 </td>
                 <td><span class="fb-badge <?= status_badge_class($d['status']) ?>"><?= ucfirst($d['status']) ?></span></td>
                 <td class="fb-text-muted fb-small"><?= time_ago($d['created_at']) ?></td>
+              </tr>
+              <?php endforeach; ?>
+            </tbody>
+          </table>
+        </div>
+      <?php endif; ?>
+
+      <!-- ============ People I'm Helping ============ -->
+      <div class="fb-flex fb-items-center fb-gap-2 fb-mt-8 fb-mb-4">
+        <i data-lucide="heart-handshake" style="color:var(--fb-primary);"></i>
+        <h4 class="fb-mb-0">People I'm Helping (<?= count($helping) ?>)</h4>
+      </div>
+
+      <?php if (!$helping): ?>
+        <div class="fb-panel fb-text-center fb-text-muted" style="padding:32px 0;">
+          <i data-lucide="hand-helping" style="width:40px;height:40px;"></i>
+          <p class="fb-mb-0 fb-mt-3">You haven't helped anyone from the map yet. Open the <a href="<?= url('map.php') ?>">Live Map</a> and help a red pin. 💚</p>
+        </div>
+      <?php else: ?>
+        <div class="fb-table-wrap">
+          <table class="fb-table">
+            <thead>
+              <tr>
+                <th>Person</th>
+                <th>What they need</th>
+                <th>People</th>
+                <th>Call</th>
+                <th>Status</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              <?php foreach ($helping as $h): ?>
+              <tr>
+                <td class="fb-fw-600"><?= e($h['requester']) ?></td>
+                <td><?= e($h['description']) ?></td>
+                <td><?= (int) $h['people_count'] ?></td>
+                <td>
+                  <a href="tel:<?= e($h['req_phone']) ?>" class="fb-btn fb-btn-secondary" style="padding:6px 12px;">
+                    <i data-lucide="phone" style="width:14px;height:14px;"></i> <?= e($h['req_phone']) ?>
+                  </a>
+                </td>
+                <td><span class="fb-badge <?= status_badge_class($h['status']) ?>"><?= ucfirst($h['status']) ?></span></td>
+                <td class="fb-text-muted fb-small"><?= time_ago($h['created_at']) ?></td>
               </tr>
               <?php endforeach; ?>
             </tbody>

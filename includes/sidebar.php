@@ -28,6 +28,7 @@ $menus = [
         ['dashboard', 'Dashboard',    'layout-dashboard', 'dashboard.php'],
         ['donate',    'Donate Food',  'gift',             'donate.php'],
         ['mydonations','My Donations','package',          'my-donations.php'],
+        ['map',       'Live Map',     'map',              'map.php'],
         ['notifications', 'Notifications', 'bell',        'notifications.php'],
         ['profile',   'Profile',      'user',             'profile.php'],
         ['settings',  'Settings',     'settings',         'settings.php'],

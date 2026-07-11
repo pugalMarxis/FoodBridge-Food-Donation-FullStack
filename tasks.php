@@ -39,7 +39,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accept_task'])) {
 
             if ($row) {
                 $title = 'A volunteer accepted your request';
-                $body  = $u['name'] . ' is coming to help you soon.';
+                $body  = $u['name'] . ' is coming to help you. Call: ' . $u['phone'];
+
                 $stmt  = $conn->prepare(
                     "INSERT INTO notifications (user_id, title, body, icon) VALUES (?, ?, ?, 'bike')"
                 );

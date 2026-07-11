@@ -59,10 +59,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['claim_food'])) {
         $stmt->bind_param('iisss', $uid, $postId, $ftype, $desc, $loc);
         $stmt->execute();
         $stmt->close();
-
-        // Notify the giver
+        // Notify the giver (with the receiver's phone so they can connect directly)
         $title = 'Your donation was claimed 🎉';
-        $body  = $u['name'] . ' claimed "' . $post['food_name'] . '". A volunteer can now deliver it.';
+        $body  = $u['name'] . ' claimed "' . $post['food_name'] . '". Call them: ' . $u['phone'];
+
         $stmt  = $conn->prepare("INSERT INTO notifications (user_id, title, body, icon) VALUES (?, ?, ?, 'hand')");
         $stmt->bind_param('iss', $post['user_id'], $title, $body);
         $stmt->execute();
@@ -96,6 +96,17 @@ if (!$food) {
 
 $isOwner    = ((int) $food['user_id'] === $uid);
 $canClaim   = ($role === 'receiver' && $food['status'] === 'available' && !$isOwner);
+
+// Did the current receiver already claim this food? (so we can show the donor's phone)
+$claimedByMe = false;
+if ($role === 'receiver') {
+    $stmt = $conn->prepare('SELECT id FROM requests WHERE food_post_id = ? AND receiver_id = ? LIMIT 1');
+    $stmt->bind_param('ii', $id, $uid);
+    $stmt->execute();
+    $claimedByMe = (bool) $stmt->get_result()->fetch_assoc();
+    $stmt->close();
+}
+
 
 $active     = '';
 $page_title = 'Food Details';
@@ -191,11 +202,25 @@ require __DIR__ . '/includes/head.php';
                   <i data-lucide="info" style="width:16px;height:16px;"></i> This is your donation.
                 </p>
               </div>
+                      <?php elseif ($claimedByMe): ?>
+              <div class="fb-panel" style="background:var(--fb-primary-light);border:none;">
+                <p class="fb-fw-600 fb-mb-2" style="color:var(--fb-primary-hover);">
+                  <i data-lucide="check-circle" style="width:18px;height:18px;"></i> You claimed this food!
+                </p>
+                <p class="fb-small fb-text-secondary fb-mb-3">Contact the donor to arrange pick-up:</p>
+                <div class="fb-flex fb-items-center fb-gap-3">
+                  <a href="tel:<?= e($food['donor_phone']) ?>" class="fb-btn fb-btn-primary">
+                    <i data-lucide="phone"></i> Call <?= e($food['donor']) ?>
+                  </a>
+                  <span class="fb-fw-600"><?= e($food['donor_phone']) ?></span>
+                </div>
+              </div>
             <?php elseif ($food['status'] !== 'available'): ?>
               <div class="fb-panel fb-text-center fb-text-muted" style="padding:16px;">
                 <i data-lucide="lock" style="width:20px;height:20px;"></i>
                 This food is no longer available.
               </div>
+
             <?php else: ?>
               <p class="fb-text-muted fb-small fb-mb-0">Only receivers can claim food items.</p>
             <?php endif; ?>

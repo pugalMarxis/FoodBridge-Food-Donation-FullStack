@@ -97,9 +97,12 @@ require __DIR__ . '/includes/head.php';
                   <p class="fb-list-title fb-mb-0"><?= e($m['title']) ?></p>
                   <p class="fb-list-sub fb-mb-0"><?= e($m['info']) ?></p>
                 </div>
-                <?php if ($m['type'] === 'food'): ?>
+                 <?php if ($m['type'] === 'food'): ?>
                   <a href="<?= url('food-details.php?id=' . $m['id']) ?>" class="fb-btn fb-btn-secondary" style="padding:8px 14px;">View</a>
+                <?php else: ?>
+                  <a href="<?= url('help-request.php?id=' . $m['id']) ?>" class="fb-btn fb-btn-primary" style="padding:8px 14px;">Help</a>
                 <?php endif; ?>
+
               </div>
             <?php endforeach; ?>
           </div>
@@ -116,6 +119,8 @@ require __DIR__ . '/includes/head.php';
 <script>
   const FB_MARKERS = <?= json_encode($markers) ?>;
   const DETAILS_URL = '<?= url('food-details.php?id=') ?>';
+  const HELP_URL    = '<?= url('help-request.php?id=') ?>';
+
 
   const center = FB_MARKERS.length ? [FB_MARKERS[0].lat, FB_MARKERS[0].lng] : [7.8731, 80.7718];
   const zoom   = FB_MARKERS.length ? 12 : 7;
@@ -131,11 +136,14 @@ require __DIR__ . '/includes/head.php';
       radius: 10, color: '#fff', weight: 2, fillColor: color, fillOpacity: 1
     }).addTo(map);
 
-    let html = '<b>' + m.title + '</b><br>' + m.info;
+        let html = '<b>' + m.title + '</b><br>' + m.info;
     if (m.type === 'food') {
       html += '<br><a href="' + DETAILS_URL + m.id + '">View details</a>';
+    } else {
+      html += '<br><a href="' + HELP_URL + m.id + '">🙏 Help this person</a>';
     }
     dot.bindPopup(html);
+
   });
 </script>
 </body>
