@@ -44,8 +44,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'INSERT INTO food_posts (user_id, food_type, food_name, quantity, unit, location, latitude, longitude, pickup_date, pickup_time, notes, status)
              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, "available")'
         );
-        $stmt->bind_param('isssssddsss', $uid, $foodType, $foodName, $quantity, $unit, $location, $latitude, $longitude, $pickDate, $pickTime, $notes);
+                $stmt->bind_param('isssssddsss', $uid, $foodType, $foodName, $quantity, $unit, $location, $latitude, $longitude, $pickDate, $pickTime, $notes);
         $stmt->execute();
+        $foodPostId = (int) $stmt->insert_id;
         $stmt->close();
 
         $title = 'Donation posted: ' . $foodName;
@@ -55,8 +56,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->execute();
         $stmt->close();
 
-        set_flash('success', 'Thank you! Your donation has been posted successfully. 🍱');
+        // Auto-send SMS alerts (demo) to people without smartphones
+        $smsMsg = 'FoodBridge: Free food "' . $foodName . '" (' . trim($quantity . ' ' . $unit) . ') at '
+                . ($location !== '' ? $location : 'see details') . '. Call ' . $u['phone'] . '. Reply YES to claim.';
+        $subs = $conn->query("SELECT name, phone FROM sms_subscribers WHERE phone <> ''")->fetch_all(MYSQLI_ASSOC);
+        $smsSent = 0;
+        if ($subs) {
+            $slog = $conn->prepare('INSERT INTO sms_logs (phone, recipient_name, message, food_post_id) VALUES (?, ?, ?, ?)');
+            foreach ($subs as $s) {
+                $slog->bind_param('sssi', $s['phone'], $s['name'], $smsMsg, $foodPostId);
+                $slog->execute();
+                $smsSent++;
+            }
+            $slog->close();
+        }
+
+        $msg = 'Thank you! Your donation has been posted. 🍱';
+        if ($smsSent > 0) {
+            $msg .= ' SMS alert sent to ' . $smsSent . ' people without smartphones. 📟';
+        }
+        set_flash('success', $msg);
         redirect('dashboard.php');
+
     } else {
         set_flash('error', implode(' ', $errors));
     }
