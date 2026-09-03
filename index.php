@@ -1,6 +1,6 @@
 <?php
 /**
- * FoodBridge — index.php
+ * FoodBridge — index.php hi
  * Public Home / Landing page: "Share Food. Share Hope."
  */
 require_once __DIR__ . '/includes/config.php';
