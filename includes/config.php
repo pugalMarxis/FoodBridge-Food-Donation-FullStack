@@ -29,7 +29,7 @@ define('APP_TAGLINE', 'Connecting Surplus Food with Those Who Need It');
  * Base URL of the project. Adjust if your folder name differs.
  * Example for XAMPP:  http://localhost/foodbridge
  */
-define('BASE_URL', '/foodbridge');
+define('BASE_URL', 'http://localhost/foodBridge/');
 
 // ---- Connect to MySQL ----
 mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
